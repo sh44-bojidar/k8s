@@ -57,7 +57,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name:  match-service
-  namespace: monitoring
+#  namespace: monitoring
   labels:
     release: prometheus
 spec:
