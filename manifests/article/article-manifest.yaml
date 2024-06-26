@@ -29,6 +29,13 @@ spec:
               value: rabbitmq-service
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: http://discovery-service:8761/eureka
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: 256Mi
+              memory: 700Mi
 ---
 apiVersion: v1
 kind: Service
@@ -43,3 +50,22 @@ spec:
       port: 8082
       targetPort: 8082
   type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: article-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: article-service
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
