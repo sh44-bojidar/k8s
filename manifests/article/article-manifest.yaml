@@ -33,7 +33,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  type: LoadBalancer
   name: article-service
 spec:
   selector:
@@ -43,23 +42,4 @@ spec:
       protocol: TCP
       port: 8082
       targetPort: 8082
-
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: article-service
-#  namespace: monitoring
-  labels:
-    release: prometheus
-spec:
-  selector:
-    matchLabels:
-      app: article-service
-  endpoints:
-    - port: web
-      path: /actuator/prometheus
-      interval: 30s
-  namespaceSelector:
-    matchNames:
-      - default
+      type: LoadBalancer
