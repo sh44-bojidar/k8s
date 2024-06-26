@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-service
+  template:
+    metadata:
+      labels:
+        app: gateway-service
+    spec:
+      containers:
+        - name: gateway-service
+          image: sh44/sport-api-gateway:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka
+            - name: KEYCLOAK_BASE_URL
+              value: http://keycloak-service:8080
+            - name: KEYCLOAK_CLIENT_ID
+              value: spring-cloud-client
+            - name: KEYCLOAK_CLIENT_SECRET
+              value: '**********'
+            - name: KEYCLOAK_TOKEN_ISSUER_URL
+              value: http://keycloak-service:8080/realms/sport-spot-realm
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /actuator/health
+spec:
+  type: LoadBalancer
+  selector:
+    app: gateway-service
+  ports:
+    - protocol: TCP
+      port: 80 # External port
+      targetPort: 8080 # Port your Gateway is listening on
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gateway-service
+  namespace: default
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app:  gateway-service
+  endpoints:
+    - port: http
+      path: /actuator/prometheus

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-service
+  template:
+    metadata:
+      labels:
+        app: keycloak-service
+    spec:
+      containers:
+        - name: keycloak-service
+          image: sh44/keycloak-sportspot:latest
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: keycloak-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

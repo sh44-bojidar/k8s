@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comments-consumer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: comments-consumer-service
+  template:
+    metadata:
+      labels:
+        app: comments-consumer-service
+    spec:
+      containers:
+        - name: comments-consumer-service
+          image: sh44/comments-consumer-service:latest
+          ports:
+            - containerPort: 8085
+          env:
+            - name: MONGO_URL
+              value: mongodb+srv://bojidarbac:H7lHnNnBeiYkD9xo@clustercomments.mcjset7.mongodb.net/?retryWrites=true&w=majority&appName=clusterComments
+            - name: MONGO_DB
+              value: sportspot
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq-service
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comments-consumer-service
+spec:
+  selector:
+    app: comments-consumer-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8085
+      targetPort: 8085
