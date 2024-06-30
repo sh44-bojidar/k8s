@@ -44,3 +44,4 @@ spec:
     - protocol: TCP
       port: 80 # External port
       targetPort: 8080 # Port your Gateway is listening on
+
