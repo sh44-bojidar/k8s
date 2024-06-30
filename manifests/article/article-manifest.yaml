@@ -20,15 +20,15 @@ spec:
           env:
             - name: SPRING_DATA_URL
               value: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?user=postgres.qsfzcykajlcfcsitsmco&password=H7lHnNnBeiYkD9xo&prepareThreshold=0
-# !!!!!!!!!!!!!!!!!! &prepareThreshold=0 is for the ERROR: prepared statement "S_4" already exists. Maybe remove it later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#              valueFrom:
-#                secretKeyRef:
-#                  name: articles-db-credentials
-#                  key: database-url
             - name: RABBITMQ_HOST
               value: rabbitmq-service
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: http://discovery-service:8761/eureka
+          resources:
+            limits:
+              cpu: 500m
+            requests:
+              cpu: 200m
 ---
 apiVersion: v1
 kind: Service
@@ -42,7 +42,7 @@ spec:
       protocol: TCP
       port: 8082
       targetPort: 8082
-  type: LoadBalancer
+  type: ClusterIP
 
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -63,3 +63,22 @@ spec:
   namespaceSelector:
     matchNames:
       - default
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: article-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: article-service
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
